@@ -33,10 +33,10 @@ export default function Home() {
   const chartRef = useRef<ChartJS<"line"> | null>(null);
 
   const [data, setData] = useState<ScoreData[]>([{ score: "", count: "" }]);
-  const [results, setResults] = useState<{
-    average: number | null;
-    stdDev: number | null;
-  }>({ average: null, stdDev: null });
+  const [results, setResults] = useState<
+    | { average: number; stdDev: number }
+    | null
+  >(null);
   const [chartData, setChartData] = useState<ChartData<"line"> | null>(
     null
   );
@@ -83,15 +83,15 @@ export default function Home() {
 
     if (validData.length === 0) {
       alert("有効なデータを入力してください。");
-      setResults({ average: null, stdDev: null });
+      setResults(null);
       setChartData(null);
       return;
     }
 
     // 合計人数を計算
     const totalCount = validData.reduce((sum, row) => sum + row.count, 0);
-    if (totalCount === 0) {
-      setResults({ average: null, stdDev: null });
+    if (totalCount === 0 || Number.isNaN(totalCount)) {
+      setResults(null);
       setChartData(null);
       return;
     }
@@ -106,7 +106,7 @@ export default function Home() {
     // 分散と標準偏差を計算
     const variance =
       validData.reduce((sum, row) => sum + Math.pow(row.score - average, 2) * row.count, 0) / totalCount;
-    const stdDev = Math.sqrt(variance);
+    const stdDev = Math.sqrt(variance) || 0;
 
     setResults({ average, stdDev });
 
@@ -147,7 +147,7 @@ export default function Home() {
   };
 
   const handleDeviationCalculate = () => {
-    if (results.average === null || results.stdDev === null) return;
+    if (!results) return;
 
     const score = parseFloat(myScore);
     if (isNaN(score)) {
@@ -180,8 +180,7 @@ export default function Home() {
   const handlePrint = () => {
     // レポート作成に必要なデータが揃っているか確認
     if (
-      !results.average ||
-      !results.stdDev ||
+      !results ||
       !deviationResult ||
       !myScore ||
       !chartRef.current
@@ -293,9 +292,9 @@ export default function Home() {
       <div className="print:hidden">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-bold">偏差値を測定しよう！</h1>
-          {results.average !== null && (
+          {results && (
             <button
-              onClick={handlePrint}
+              onClick={() => handlePrint()}
               className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
             >
               レポートを印刷
@@ -339,7 +338,7 @@ export default function Home() {
           </div>
         </div>
 
-        {results.average !== null && (
+        {results && (
           <>
             {/* Step 2: Results and Distribution Graph */}
             <div className="mt-6 p-6 border rounded-lg shadow-md bg-white">
