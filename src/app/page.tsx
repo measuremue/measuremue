@@ -357,7 +357,7 @@ export default function Home() {
                   <p>
                     <strong>標準偏差:</strong>
                     <span className="ml-2 font-mono text-xl text-blue-600">
-                      {results.stdDev.toFixed(2)}
+                      {results?.stdDev.toFixed(2)}
                     </span>
                   </p>
                 </div>
